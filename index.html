@@ -133,12 +133,12 @@ body.dev-on.touch #tc>#bDevFly,body.dev-on.touch #tc>#bDevDown,body.dev-on.touch
 <div class="lb-cols">
 <section><h3>Режим</h3>
 <button class="card sel" data-mode="bots"><div>С ботами<small>5 на 5: ты и 4 союзника против 5 врагов</small></div></button>
-<button class="card" data-mode="bomb"><div>Плент бомбы<small>Только Sandstone. Оффлайн с ботами или онлайн по коду комнаты. Закладка и разминирование как в Standoff 2</small></div></button>
+<button class="card" data-mode="bomb"><div>Плент бомбы<small>Только DustPoint. Оффлайн с ботами или онлайн по коду комнаты. Закладка и разминирование</small></div></button>
 <button class="card" data-mode="duel"><div>1 на 1<small>Дуэль онлайн по коду комнаты</small></div><span class="soon">Онлайн</span></button></section>
 <section><h3>Карта</h3>
 <button class="card sel" data-map="arena"><canvas id="mapPrev" width="96" height="96"></canvas><div>Арена<small>Закрытая арена с укрытиями</small></div></button>
-<button class="card" data-map="sandyards"><canvas id="mapPrev2" width="96" height="96"></canvas><div>Sandyards<small>Песчаные дворы: здания и переулки</small></div></button>
-<button class="card" data-map="sandstone"><canvas id="mapPrev3" width="96" height="96"></canvas><div>Sandstone<small>Большая карта: проходы, площадки A и B</small></div></button></section>
+<button class="card" data-map="OutPost"><canvas id="mapPrev2" width="96" height="96"></canvas><div>OutPost<small>Песчаные дворы: здания и переулки</small></div></button>
+<button class="card" data-map="DustPoint"><canvas id="mapPrev3" width="96" height="96"></canvas><div>DustPoint<small>Большая карта: проходы, площадки A и B</small></div></button></section>
 </div>
 <div id="duelBox" style="display:none">
 <div style="margin-bottom:8px">Код комнаты: <input id="roomCode" maxlength="12" autocomplete="off" autocapitalize="off" spellcheck="false"> <button id="rcNew">Новый</button></div>
@@ -146,7 +146,7 @@ body.dev-on.touch #tc>#bDevFly,body.dev-on.touch #tc>#bDevDown,body.dev-on.touch
  <button type="button" class="card" id="teamT" style="display:inline-flex;width:auto;padding:8px 14px;margin:4px">🔴 Террористы (бомба)</button>
  <button type="button" class="card sel" id="teamCT" style="display:inline-flex;width:auto;padding:8px 14px;margin:4px">🔵 Спецназ (защита)</button>
 </div>
-<p id="duelStatus">Онлайн: введи код. Хост создаёт комнату первым. До 5 игроков в каждой команде (бомба) или 1 на 1 (дуэль). Нужен интернет (PeerJS).</p>
+<p id="duelStatus">Онлайн: введи код. Хост создаёт комнату первым. До 5 игроков в каждой команде (бомба) или 1 на 1 (дуэль). Нужен интернет (PeerJS). В режиме бомбы команды всегда равные: если на твоей стороне уже больше игроков, тебя поставят в другую.</p>
 <p id="lobbyPlayers" style="opacity:.8;font-size:13px;margin:4px 0 0"></p>
 </div>
 <button id="playBtn">ИГРАТЬ</button>
@@ -15833,7 +15833,7 @@ function wpick(b,r){
   const L=b.team==='blue'?MAP.spR:MAP.spB,q=L[Math.floor(Math.random()*L.length)];return{x:q[0]+(Math.random()-.5)*3,z:q[1]+(Math.random()-.5)*3,y:q[2]};}
  return{x:(Math.random()*2-1)*(S-4),z:(b.team==='blue'?-1:1)*(4+Math.random()*(S-8))};}
 const MD2=JSON.parse(document.getElementById('mapdata2').textContent),MAPS={},ARENA_SITES=[{n:'A',x:-16,z:-12,y:0},{n:'B',x:16,z:-14,y:0}];
-function buildMap(id){if(MAPS[id])return MAPS[id];const X=id==='sandstone'?MD2:MD,g=new THREE.Group();g.meshes=[];g.rm=[];
+function buildMap(id){if(MAPS[id])return MAPS[id];const X=id==='DustPoint'?MD2:MD,g=new THREE.Group();g.meshes=[];g.rm=[];
  const ld=new THREE.TextureLoader(),tex=X.tex.map(u=>{const t=ld.load(u);t.wrapS=t.wrapT=THREE.RepeatWrapping;t.anisotropy=4;return t;});DEC=[];
  X.meshes.forEach(e=>{let pp,uv;
   if(e.q){const q=new Int16Array(b64(e.p).buffer);pp=new Float32Array(q.length);for(let k=0;k<q.length;k++)pp[k]=q[k]*.005;const u=new Int16Array(b64(e.u).buffer);uv=new Float32Array(u.length);for(let k=0;k<u.length;k++)uv[k]=u[k]/2048;}
@@ -15846,7 +15846,7 @@ function buildMap(id){if(MAPS[id])return MAPS[id];const X=id==='sandstone'?MD2:M
  scene.add(g);MAP.spB=X.spawnB;MAP.spR=X.spawnR;buildTris();buildNav();
  const m={g,col:{TV,TY,FT,FL,WL,ST,NT,GX0,GZ0,GW,GHh},nv:NV,spB:X.spawnB,spR:X.spawnR,sites:X.sites,fog:X.fog||[40,170,220]};MAPS[id]=m;return m;}
 function setMap(id){MAP.id=id;walls.length=0;Object.values(MAPS).forEach(m=>m.g.visible=false);
- if(id==='sandyards'||id==='sandstone'){const m=buildMap(id);({TV,TY,FT,FL,WL,ST,NT,GX0,GZ0,GW,GHh}=m.col);NV=m.nv;MAP.g=true;MAP.spB=m.spB;MAP.spR=m.spR;MAP.sites=m.sites;
+ if(id==='OutPost'||id==='DustPoint'){const m=buildMap(id);({TV,TY,FT,FL,WL,ST,NT,GX0,GZ0,GW,GHh}=m.col);NV=m.nv;MAP.g=true;MAP.spB=m.spB;MAP.spR=m.spR;MAP.sites=m.sites;
   arenaObjs.forEach(o=>o.visible=false);m.g.visible=true;m.g.rm.forEach(x=>walls.push(x));floor.position.y=-50;scene.fog.near=m.fog[0];scene.fog.far=m.fog[1];cam.far=m.fog[2];
   const av=L=>L.reduce((a,q)=>[a[0]+q[0]/L.length,a[1]+q[1]/L.length],[0,0]),cb=av(m.spB),cr=av(m.spR);MAP.yawB=Math.atan2(-(cr[0]-cb[0]),-(cr[1]-cb[1]));}
  else{MAP.g=null;MAP.sites=ARENA_SITES;MAP.yawB=0;arenaObjs.forEach(o=>o.visible=true);arenaWalls.forEach(m=>walls.push(m));floor.position.y=0;scene.fog.near=20;scene.fog.far=70;cam.far=100;}
@@ -15935,8 +15935,19 @@ function pauseGame(){if(!P.alive||paused||shopOpen||NET.on)return;paused=true;mo
 $('pauseBtn').onclick=pauseGame;
 function killBot(b){if(b.team==='red')SC.blue++;else SC.red++;deathBot(b);splash(new THREE.Vector3(b.x,(MAP.g?b.gy:0)+1.1,b.z),new THREE.Vector3(0,1,0),30);respawnBot(b);}
 function dmgTo(t,dmg){if(t.player){if(P.inv>0||P.dead)return;P.hp-=dmg;snd('hurt',.9);$('dmg').style.opacity=1;setTimeout(()=>$('dmg').style.opacity=0,150);if(P.hp<=0)die();}else{t.hp-=25;if(t.hp<=0)killBot(t);}}
-function enemiesOf(b){const l=[];if(b.team==='red'){if(!P.dead&&!DEV.invis)l.push({x:P.x,z:P.z,player:true});bots.forEach(a=>{if(a.alive&&a.team==='blue')l.push(a);});}
- else bots.forEach(e=>{if(e.alive&&e.team==='red')l.push(e);});return l;}
+function enemiesOf(b){
+ const l=[];
+ const playerTeam=myTeam();
+ // Бот атакует игрока, только если игрок из другой команды
+ if(b.team!==playerTeam&&!P.dead&&!DEV.invis){
+  l.push({x:P.x,z:P.z,player:true});
+ }
+ // Боты атакуют только противников
+ bots.forEach(a=>{
+  if(a.alive&&a.team!==b.team)l.push(a);
+ });
+ return l;
+}
 function canSee(b,t){const dx=t.x-b.x,dz=t.z-b.z,d=Math.hypot(dx,dz)||1;if(d>40)return false;if(SMK.length&&smokeBlocks(b.x,(MAP.g?b.gy:0)+1.4,b.z,t.x,(MAP.g?gyOf(t):0)+1.2,t.z))return false;if(MAP.g)return losT(b.x,b.gy+1.45,b.z,t.x,gyOf(t)+1.2,t.z);
  rcB.set(new THREE.Vector3(b.x,1.5,b.z),new THREE.Vector3(dx/d,0,dz/d));rcB.far=d;return rcB.intersectObjects(walls).length===0;}
 function animBot(b,dt,moving,aim){
@@ -16115,7 +16126,7 @@ function onNetData(q,fromId){
  if(t0==='hello'){
   if(NET.state==='wait'||!NET.on){
    if(q.map)NET.mapId=q.map;if(q.mode)NET.mode=q.mode;
-   if(q.team)NET.team=q.team;
+   if(q.team){NET.team=q.team;if(q.swapped&&NET.mode==='bomb'){const nm=q.team==='red'?'Террористов (T)':'Спецназ (CT)';NET.swapNote='Команды должны быть равны: ты за '+nm+'.';try{$('duelStatus').textContent=NET.swapNote;}catch(e){}}try{pickTeam(q.team);}catch(e){}}
    if(Array.isArray(q.roster))q.roster.forEach(r=>ensurePlayer(r.id,r.team));
    startNetGame(NET.mapId,false);
   }
@@ -16123,13 +16134,15 @@ function onNetData(q,fromId){
  }
  if(t0==='join'){
   if(!NET.host)return;
-  const want=q.team==='red'?'red':'blue';
+  const want=q.team==='red'?'red':'blue',other=want==='red'?'blue':'red';
   let team=want;
+  if(NET.mode==='duel')team=NET.team==='red'?'blue':'red';                      // дуэль: всегда противоположная сторона от хоста
+  else if(NET.mode==='bomb'&&teamCount(want)>teamCount(other))team=other;        // бомба: в команду, где игроков больше, нельзя
   if(teamCount(team)>=NET.maxTeam)team=team==='blue'?'red':'blue';
   if(teamCount(team)>=NET.maxTeam){try{NET.conns[fromId]&&NET.conns[fromId].send({t:'full'});}catch(e){}return;}
   ensurePlayer(fromId,team);
   const roster=[{id:NET.me,team:NET.team}].concat(Object.values(NET.players).map(p=>({id:p.id,team:p.team})));
-  try{NET.conns[fromId].send({t:'hello',map:NET.mapId,mode:NET.mode,team,roster});}catch(e){}
+  try{NET.conns[fromId].send({t:'hello',map:NET.mapId,mode:NET.mode,team,roster,swapped:team!==want});}catch(e){}
   netBroadcast({t:'roster',roster},fromId);
   lobbyRoster();
   if(NET.state==='wait'&&NET.mode==='duel'){startNetGame(NET.mapId,true);}
@@ -16194,8 +16207,8 @@ setInterval(()=>{
  }else netSend(st);
 },50);
 function syncMapLock(){const me=document.querySelector('#lobby .card.sel[data-mode]'),bomb=!!me&&me.dataset.mode==='bomb';
- document.querySelectorAll('#lobby .card[data-map]').forEach(c=>{const ok=!bomb||c.dataset.map==='sandstone';c.disabled=!ok;c.style.opacity=ok?'':'.35';
-  if(bomb&&c.dataset.map==='sandstone'){c.parentElement.querySelectorAll('.card').forEach(x=>x.classList.remove('sel'));c.classList.add('sel');}});}
+ document.querySelectorAll('#lobby .card[data-map]').forEach(c=>{const ok=!bomb||c.dataset.map==='DustPoint';c.disabled=!ok;c.style.opacity=ok?'':'.35';
+  if(bomb&&c.dataset.map==='DustPoint'){c.parentElement.querySelectorAll('.card').forEach(x=>x.classList.remove('sel'));c.classList.add('sel');}});}
 function updateDuelUI(){
  syncMapLock();
  const modeEl=document.querySelector('#lobby .card.sel[data-mode]');
@@ -16228,7 +16241,7 @@ function onlinePlay(mapId,mode){
  }
  const code=$('roomCode').value.toLowerCase().replace(/[^a-z0-9]/g,'').slice(0,12);
  if(code.length<3){$('duelStatus').textContent='Код комнаты: от 3 символов.';return;}
- $('roomCode').value=code;NET.mapId=mapId;NET.code=code;NET.mode=mode||'duel';NET.state='wait';
+ $('roomCode').value=code;NET.mapId=mapId;NET.code=code;NET.mode=mode||'duel';NET.state='wait';NET.maxTeam=(NET.mode==='duel')?1:5;
  if(mode==='duel')NET.team='blue';
  updateDuelUI();
  $('duelStatus').textContent='Загрузка PeerJS…';
@@ -16346,7 +16359,7 @@ function drawSS(g,W,H){
 function drawMinimap(){
  const c=$('minimap');if(!c)return;
  const g=c.getContext('2d'),W=c.width,H=c.height;
- if(MAP.id==='sandstone'&&MMI.ok){drawSS(g,W,H);return;}
+ if(MAP.id==='DustPoint'&&MMI.ok){drawSS(g,W,H);return;}
  g.clearRect(0,0,W,H);g.fillStyle='rgba(12,16,24,.92)';g.fillRect(0,0,W,H);
  const b=mapBounds();
  const sc=Math.min(W/(b.maxX-b.minX),H/(b.maxZ-b.minZ));
@@ -16472,7 +16485,7 @@ function startRound(){BM.round++;
  if(!NET.on){const atkBots=bots.filter(b=>b.team===BM.atk),pool=(myAtk()?['player']:[]).concat(atkBots),pick=pool.length?pool[Math.floor(Math.random()*pool.length)]:'player';
   if(pick==='player'){BM.carrier='player';}else{BM.carrier='bot';BM.carrierBot=pick;}}
  const role=myAtk()?'атака (T)':'защита (CT)';
- let m='Раунд '+BM.round+' · ты — '+role+'. ';
+ let m='Раунд '+BM.round+' · ты — '+role+'. ';if(NET.swapNote){m=NET.swapNote+' '+m;NET.swapNote='';}
  if(swapped)m='Смена сторон! '+m;
  m+=myAtk()?(BM.carrier==='player'||NET.on?'Неси бомбу на A или B и удерживай «Заложить».':'Бомба у союзника: прикрывай его.'):'Не дай заложить бомбу, а если её заложат — разминируй (удерживай B).';
  bmMsg(m,5);snd('roundStart',.7);}
@@ -16635,7 +16648,7 @@ function loop(){requestAnimationFrame(loop);const dt=Math.min(clock.getDelta(),.
 document.querySelectorAll('#lobby .card:not(:disabled)').forEach(c=>c.onclick=()=>{c.parentElement.querySelectorAll('.card').forEach(x=>x.classList.remove('sel'));c.classList.add('sel');});
 $('playBtn').onclick=()=>{const m=document.querySelector('#lobby .card.sel[data-map]');let id=m?m.dataset.map:'arena';
  const modeEl=document.querySelector('#lobby .card.sel[data-mode]'),mode=modeEl?modeEl.dataset.mode:'bots';
- if(mode==='bomb')id='sandstone';
+ if(mode==='bomb')id='DustPoint';
  if(mode==='duel'){duelPlay(id);return;}
  if(mode==='bomb'){
   const code=($('roomCode').value||'').trim().toLowerCase().replace(/[^a-z0-9]/g,'');
