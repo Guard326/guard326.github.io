@@ -52,6 +52,12 @@ html,body{touch-action:none;-webkit-user-select:none;user-select:none;-webkit-to
 #bShop{right:calc(170px + env(safe-area-inset-right,0px));bottom:calc(150px + env(safe-area-inset-bottom,0px));width:60px;height:60px}
 #shop{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.7);z-index:40}
 #shop.open{display:flex}
+
+
+
+
+
+
 #caseSpin{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.88);z-index:45;flex-direction:column;gap:18px;padding:16px}
 #caseSpin.open{display:flex}
 #caseSpin h3{margin:0;color:var(--ac);font-size:22px;letter-spacing:1px}
@@ -202,12 +208,18 @@ body.dev-on.touch #tc>#bDevFly,body.dev-on.touch #tc>#bDevDown,body.dev-on.touch
 @keyframes hmk{0%{opacity:1;transform:scale(1.35)}100%{opacity:0;transform:scale(.85)}}
 #dn{position:absolute;inset:0;pointer-events:none;overflow:hidden}
 .dn{position:absolute;font-weight:800;text-shadow:0 1px 3px #000,0 0 6px #000;transform:translate(-50%,-50%);pointer-events:none}
+
+#lobbyPlay,#lobbyShop,#lobbyInv{width:100%;flex-direction:column;align-items:center}
+#lobbyPlay{display:flex}
+#lobbyShop,#lobbyInv{display:none}
+#menuActions .menuAction.sel{border-color:var(--ac);box-shadow:0 0 0 2px var(--ac)}
 </style></head><body>
-<div id="menuActions"><button type="button" class="menuAction primary" id="menuPlay"><span class="menuIcon">▶</span><span>ИГРАТЬ</span></button><button type="button" class="menuAction" id="menuShop"><span class="menuIcon">🛒</span><span>МАГАЗИН</span></button></div>
+<div id="menuActions"><button type="button" class="menuAction primary" id="menuPlay"><span class="menuIcon">▶</span><span>ИГРАТЬ</span></button><button type="button" class="menuAction" id="menuShop"><span class="menuIcon">🛒</span><span>МАГАЗИН</span></button><button type="button" class="menuAction" id="menuInv"><span class="menuIcon">🎒</span><span>ИНВЕНТАРЬ</span></button></div>
 <div id="coinHud"><span class="silverCoin">✦</span><span id="coinBalance">0</span></div>
 <div id="emoteFx" aria-hidden="true"></div>
 <div id="hud"><div id="dmg"></div><div id="flashov"></div><div id="grn"></div><div id="match"><span class="b">0</span><b>5:00</b><span class="r">0</span></div><div id="opp"></div><div id="bnr"></div><div id="actBox" style="display:none"><div id="actLbl"></div><div id="actBar"><i id="actFill"></i></div></div><div id="grace"></div><div id="dead"></div><button id="pauseBtn">⏸</button><button id="sndBtn">🔊</button><div id="cross"></div><div id="hm"></div><div id="dn"></div><div id="score"></div><canvas id="minimap" width="256" height="256"></canvas><div id="hp"></div><div id="ammo"></div></div>
 <div id="lobby"><button type="button" id="devBtn">Я разработчик</button><h1>MINI STRIKE</h1><p class="lb-sub">Лобби</p>
+<div id="lobbyPlay">
 <div class="lb-cols">
 <section><h3>Режим</h3>
 <button class="card sel" data-mode="bots"><div>С ботами<small>5 на 5: ты и 4 союзника против 5 врагов</small></div></button>
@@ -229,21 +241,8 @@ body.dev-on.touch #tc>#bDevFly,body.dev-on.touch #tc>#bDevDown,body.dev-on.touch
 </div>
 <button id="playBtn">ИГРАТЬ</button>
 <p class="lb-hint"><span class="t-pc">WASD — движение · ЛКМ — стрельба · R — перезарядка · E — магазин · P — пауза</span><span class="t-touch">Стик слева — движение · Свайп — прицел · 🛒 — магазин</span></p></div>
-<div id="devModal"><div id="devBox"><h3>Подтвердите личность</h3><p style="opacity:.8;margin:0 0 12px">Нужно ввести код.</p><input id="devCode" type="password" maxlength="8" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="••••"><div><button type="button" id="devOk">ОК</button><button type="button" class="cancel" id="devCancel">Отмена</button></div><p id="devErr" style="color:#ff5a4a;font-size:13px;margin:10px 0 0;display:none">Неверный код</p></div></div>
-<div id="shop"><div id="shopBox"><h2>🛒 Магазин</h2>
-<div class="shopTabs"><button type="button" class="sel" id="tabWeapons">Оружие</button><button type="button" id="tabCases">Кейсы</button></div>
-<div id="shopWeapons">
-<div id="shopMoney"></div>
-<div class="item"><div><b>🔪 Нож</b><br><small>Есть с начала игры</small></div><button disabled>Куплено</button></div>
-<div class="item"><div><b>🔫 Desert Eagle</b><br><small>30 патронов · 3 попадания в тело</small></div><button id="buyPistol"></button></div>
-<div class="item"><div><b>AK-47</b><br><small>Только атака (T) · автоогонь</small></div><button id="buyAk"></button></div>
-<div class="item"><div><b>M4A1</b><br><small>Только спецназ (CT) · автоогонь</small></div><button id="buyM4"></button></div>
-<div class="item"><div><b>💣 Осколочная</b><br><small>Урон по площади · до 2 шт.</small></div><button id="buy_frag"></button></div>
-<div class="item"><div><b>✨ Светошумовая</b><br><small>Слепит всех в поле зрения</small></div><button id="buy_flash"></button></div>
-<div class="item"><div><b>☁ Дымовая</b><br><small>Закрывает обзор на 17 секунд</small></div><button id="buy_smoke"></button></div>
-<div class="item" style="display:none"><div><b>🛠 Набор сапёра</b><br><small>Только защита: разминирование за 5 с вместо 10</small></div><button id="buyKit"></button></div>
-</div>
-<div id="shopCases" style="display:none">
+<div id="lobbyShop" style="display:none;width:min(720px,96vw);margin:0 auto;text-align:center">
+
 <div id="shopSilver"></div>
 <button type="button" id="promoBtn">🎟 ПРОМОКОД</button>
 <div id="promoBox">
@@ -269,11 +268,31 @@ body.dev-on.touch #tc>#bDevFly,body.dev-on.touch #tc>#bDevDown,body.dev-on.touch
 <button type="button" id="buyPrimaryBox">Купить</button><button type="button" class="sec" id="openPrimaryBox">Открыть (0)</button>
 </div>
 </div>
+
+</div>
+<div id="lobbyInv" style="display:none;width:min(720px,96vw);margin:0 auto;text-align:center">
+
+<div id="invSilver" style="opacity:.9;font-size:14px;margin:0 0 10px"></div>
 <div class="emoteSecTitle">Скины M4A1 · клик = надеть</div>
 <div class="skinGrid" id="skinGrid"></div>
 <div class="emoteSecTitle">Эмоции · клик = выбрать</div>
 <div class="emoteGrid" id="emoteGrid"></div>
 <div id="emoteHint" style="font-size:12px;opacity:.7;margin-bottom:8px">В матче: клавиша T или кнопка 😎</div>
+
+</div>
+</div>
+<div id="devModal"><div id="devBox"><h3>Подтвердите личность</h3><p style="opacity:.8;margin:0 0 12px">Нужно ввести код.</p><input id="devCode" type="password" maxlength="8" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="••••"><div><button type="button" id="devOk">ОК</button><button type="button" class="cancel" id="devCancel">Отмена</button></div><p id="devErr" style="color:#ff5a4a;font-size:13px;margin:10px 0 0;display:none">Неверный код</p></div></div>
+<div id="shop"><div id="shopBox"><h2>🛒 Магазин</h2>
+<div id="shopWeapons">
+<div id="shopMoney"></div>
+<div class="item"><div><b>🔪 Нож</b><br><small>Есть с начала игры</small></div><button disabled>Куплено</button></div>
+<div class="item"><div><b>🔫 Desert Eagle</b><br><small>30 патронов · 3 попадания в тело</small></div><button id="buyPistol"></button></div>
+<div class="item"><div><b>AK-47</b><br><small>Только атака (T) · автоогонь</small></div><button id="buyAk"></button></div>
+<div class="item"><div><b>M4A1</b><br><small>Только спецназ (CT) · автоогонь</small></div><button id="buyM4"></button></div>
+<div class="item"><div><b>💣 Осколочная</b><br><small>Урон по площади · до 2 шт.</small></div><button id="buy_frag"></button></div>
+<div class="item"><div><b>✨ Светошумовая</b><br><small>Слепит всех в поле зрения</small></div><button id="buy_flash"></button></div>
+<div class="item"><div><b>☁ Дымовая</b><br><small>Закрывает обзор на 17 секунд</small></div><button id="buy_smoke"></button></div>
+<div class="item" style="display:none"><div><b>🛠 Набор сапёра</b><br><small>Только защита: разминирование за 5 с вместо 10</small></div><button id="buyKit"></button></div>
 </div>
 <button id="shopClose">Закрыть (E)</button></div></div>
 <div id="caseSpin"><h3 id="spinTitle">Primary Case</h3><div id="spinViewport"><div id="spinMarker"></div><div id="spinTrack"></div></div><div id="spinResult"></div><button type="button" id="spinOk">Забрать</button></div>
@@ -16172,6 +16191,7 @@ function applyPromo(codeRaw){
 }
 function renderCaseShop(){
  const ss=$('shopSilver');if(ss)ss.textContent='Серебро: ✦ '+silverCoins;
+ const invs=$('invSilver');if(invs)invs.textContent='Серебро: ✦ '+silverCoins;
  const bc=$('buyPrimaryCase'),bb=$('buyPrimaryBox'),oc=$('openPrimaryCase'),ob=$('openPrimaryBox');
  if(bc){bc.disabled=silverCoins<500;bc.textContent=silverCoins<500?'Нужно 500':'Купить';}
  if(bb){bb.disabled=silverCoins<100;bb.textContent=silverCoins<100?'Нужно 100':'Купить';}
@@ -16179,15 +16199,18 @@ function renderCaseShop(){
  if(ob){ob.disabled=caseInv.primaryBox<=0;ob.textContent='Открыть ('+caseInv.primaryBox+')';}
  renderSkinGrid();renderEmoteGrid();
 }
-function setShopTab(tab){
- const w=$('shopWeapons'),c=$('shopCases'),tw=$('tabWeapons'),tc=$('tabCases');
- const cases=tab==='cases';
- if(w)w.style.display=cases?'none':'block';
- if(c)c.style.display=cases?'block':'none';
- if(tw)tw.classList.toggle('sel',!cases);
- if(tc)tc.classList.toggle('sel',cases);
- if(cases)renderCaseShop();else renderShop();
+function setLobbyPanel(panel){
+ const play=$('lobbyPlay'),shop=$('lobbyShop'),inv=$('lobbyInv');
+ if(play)play.style.display=panel==='play'?'flex':'none';
+ if(shop)shop.style.display=panel==='shop'?'block':'none';
+ if(inv)inv.style.display=panel==='inv'?'block':'none';
+ const sub=$('lobby')&&$('lobby').querySelector('.lb-sub');
+ if(sub)sub.textContent=panel==='shop'?'Магазин':panel==='inv'?'Инвентарь':'Лобби';
+ ['menuPlay','menuShop','menuInv'].forEach(id=>{const b=$(id);if(b)b.classList.toggle('sel',(id==='menuPlay'&&panel==='play')||(id==='menuShop'&&panel==='shop')||(id==='menuInv'&&panel==='inv'));});
+ if(panel==='shop'||panel==='inv')renderCaseShop();
 }
+function setShopTab(tab){if(tab==='weapons')renderShop();}
+
 const EMOTES={
  gg:{emoji:'👍',name:'GG'},
  fire:{emoji:'🔥',name:'Огонь'},
@@ -16349,25 +16372,23 @@ function renderShop(){if(DEV.money)P.money=99999;$('shopMoney').textContent='�
  const m4b=$('buyM4');if(m4b){if(P.m4){m4b.textContent='Куплено';m4b.disabled=true;}else if(!canBuyM4()){m4b.textContent='Только спецназ (CT)';m4b.disabled=true;}else{m4b.textContent=DEV.money?'Купить (∞)':'Купить $'+PRICE_AK;m4b.disabled=!DEV.money&&P.money<PRICE_AK;}}
  for(const k in GREN){const bb=$('buy_'+k),n=P.gr[k];if(DEV.infGren[k]){bb.textContent='∞ (бесконечно)';bb.disabled=true;}else{bb.textContent=n>=GMAX?'Максимум ('+n+')':(DEV.money?'Купить (∞)':'Купить $'+GREN[k].p)+(n?' (есть '+n+')':'');bb.disabled=n>=GMAX||(!DEV.money&&P.money<GREN[k].p);}}{const kb=$('buyKit');if(kb){kb.parentElement.style.display=BM.on&&!myAtk()?'':'none';kb.textContent=BM.kit?'Куплено':(DEV.money?'Купить (∞)':'Купить $400');kb.disabled=BM.kit||(!DEV.money&&P.money<400);}}}
 function isLobbyVisible(){const lob=$('lobby');if(!lob)return false;return lob.style.display!=='none'&&getComputedStyle(lob).display!=='none';}
-function toggleShop(force){const inLobby=isLobbyVisible();if((!P.alive||P.dead||MATCH.over)&&!(inLobby&&force===true)&&!(force===false&&shopOpen))return;const open=force===undefined?!shopOpen:force;if(open===shopOpen)return;shopOpen=open;
- $('shop').classList.toggle('open',open);
- if(open){if(!NET.on)paused=true;mouseDown=false;keys.Space=false;joy.f=joy.r=0;document.exitPointerLock&&document.exitPointerLock();
-  const tabs=document.querySelector('.shopTabs'),tw=$('tabWeapons'),tc=$('tabCases'),title=document.querySelector('#shopBox h2');
-  if(tabs)tabs.style.display='none';
-  if(tw)tw.style.display='none';
-  if(tc)tc.style.display='none';
-  if(inLobby){if(title)title.textContent='🧰 Кейсы';setShopTab('cases');}
-  else{if(title)title.textContent='🛒 Магазин';setShopTab('weapons');}
-  }
- else{const inLobby2=isLobbyVisible();paused=inLobby2;if(!inLobby2)rend.domElement.requestPointerLock&&rend.domElement.requestPointerLock();}}
+function toggleShop(force){
+ const inLobby=isLobbyVisible();
+ // В лобби магазин — панель, не оверлей
+ if(inLobby&&force===true){setLobbyPanel('shop');return;}
+ if(inLobby&&force===false){setLobbyPanel('play');return;}
+ if((!P.alive||P.dead||MATCH.over)&&!(force===false&&shopOpen))return;
+ const open=force===undefined?!shopOpen:force;if(open===shopOpen)return;shopOpen=open;
+ const shopEl=$('shop');if(shopEl){shopEl.classList.toggle('open',open);shopEl.classList.remove('lobbyShop');}
+ if(open){if(!NET.on)paused=true;mouseDown=false;keys.Space=false;joy.f=joy.r=0;document.exitPointerLock&&document.exitPointerLock();renderShop();}
+ else{paused=false;if(P.alive&&!MATCH.over)rend.domElement.requestPointerLock&&rend.domElement.requestPointerLock();}
+}
 $('buyPistol').onclick=()=>{if(!P.pistol&&(DEV.money||P.money>=PRICE)){if(!DEV.money)P.money-=PRICE;P.pistol=true;P.am.pistol=30;P.reloading=0;sel('pistol');$('bWeapon').textContent='🔪';renderShop();}};
 $('buyAk').onclick=()=>{if(!canBuyAk()||P.ak||!(DEV.money||P.money>=PRICE_AK))return;if(!DEV.money)P.money-=PRICE_AK;P.ak=true;P.am.ak=30;P.reloading=0;sel('ak');$('bWeapon').textContent='🔪';renderShop();};
 if($('buyM4'))$('buyM4').onclick=()=>{if(!canBuyM4()||P.m4||!(DEV.money||P.money>=PRICE_AK))return;if(!DEV.money)P.money-=PRICE_AK;P.m4=true;P.am.m4=30;P.reloading=0;sel('m4');$('bWeapon').textContent='🔪';renderShop();};
 for(const k in GREN)$('buy_'+k).onclick=()=>{if(DEV.infGren[k])return;if(P.gr[k]<GMAX&&(DEV.money||P.money>=GREN[k].p)){if(!DEV.money)P.money-=GREN[k].p;if(DEV.ok){DEV.infGren[k]=true;P.gr[k]=99;}else P.gr[k]++;P.gsel=k;renderShop();}};
 $('buyKit').onclick=()=>{if(!BM.kit&&(DEV.money||P.money>=400)){if(!DEV.money)P.money-=400;BM.kit=true;renderShop();}};
 $('shopClose').onclick=()=>toggleShop(false);
-if($('tabWeapons'))$('tabWeapons').onclick=()=>setShopTab('weapons');
-if($('tabCases'))$('tabCases').onclick=()=>setShopTab('cases');
 if($('buyPrimaryCase'))$('buyPrimaryCase').onclick=()=>{if(!spendCoins(500))return;caseInv.primaryCase++;saveInv();const m=$('caseMsg');if(m)m.textContent='Куплен Primary Case';renderCaseShop();try{snd('buy',.6);}catch(e){}};
 if($('buyPrimaryBox'))$('buyPrimaryBox').onclick=()=>{if(!spendCoins(100))return;caseInv.primaryBox++;saveInv();const m=$('caseMsg');if(m)m.textContent='Куплен Primary Box';renderCaseShop();try{snd('buy',.6);}catch(e){}};
 if($('openPrimaryCase'))$('openPrimaryCase').onclick=()=>openCase('case');
@@ -16386,13 +16407,14 @@ function syncMenuActions(){
  if(!show&&shopOpen)toggleShop(false);
 }
 $('menuPlay').onclick=()=>{
- if($('lobby').style.display==='none')return;
- const pb=$('playBtn');if(!pb)return;
- pb.scrollIntoView({behavior:'smooth',block:'center'});
- const prev=pb.style.boxShadow;pb.style.boxShadow='0 0 0 4px var(--ac)';
- setTimeout(()=>{pb.style.boxShadow=prev;},900);
+ if(!isLobbyVisible())return;
+ setLobbyPanel('play');
+ const pb=$('playBtn');if(pb){pb.scrollIntoView({behavior:'smooth',block:'center'});}
 };
-$('menuShop').onclick=e=>{e.preventDefault();e.stopPropagation();if(!isLobbyVisible())return;toggleShop(true);};
+$('menuShop').onclick=e=>{e.preventDefault();e.stopPropagation();if(!isLobbyVisible())return;setLobbyPanel('shop');};
+if($('menuInv'))$('menuInv').onclick=e=>{e.preventDefault();e.stopPropagation();if(!isLobbyVisible())return;setLobbyPanel('inv');};
+try{setLobbyPanel('play');}catch(e){}
+
 $('sndBtn').onclick=()=>toggleMute();
 ['buyPistol','buyAk','buyM4','buyKit','buy_frag','buy_flash','buy_smoke'].forEach(id=>{const e=$(id);if(!e)return;const f=e.onclick;e.onclick=function(){const sn=()=>[P.pistol,P.ak,P.m4,BM.kit,P.gr.frag,P.gr.flash,P.gr.smoke].join(),b=sn();if(f)f.apply(this,arguments);if(sn()!==b)snd('buy',.6);};});
 function respawn(){P.dead=false;P.hp=100;P.ammo=30;P.reloading=0;P.vy=0;{const q=spawnPoint(true);P.x=q.x;P.z=q.z;P.gy=q.y;P.y=P.gy+1.7;P.pitch=0;P.yaw=q.yaw;}P.inv=2;$('dead').style.display='none';}
@@ -17117,7 +17139,7 @@ $('playBtn').onclick=()=>{const m=document.querySelector('#lobby .card.sel[data-
   BM.on=true;
  }else BM.on=false;
  $('playBtn').textContent='Загрузка…';setTimeout(()=>{setMap(id);$('lobby').style.display='none';syncMenuActions();start();$('playBtn').textContent='ИГРАТЬ';},40);};
-$('toLobby').onclick=ev=>{ev.stopPropagation();netLeave();P.alive=false;paused=true;mouseDown=false;keys.Space=false;joy.f=joy.r=0;document.exitPointerLock&&document.exitPointerLock();$('menu').style.display='none';$('dead').style.display='none';$('lobby').style.display='flex';syncMenuActions();};
+$('toLobby').onclick=ev=>{ev.stopPropagation();netLeave();P.alive=false;paused=true;mouseDown=false;keys.Space=false;joy.f=joy.r=0;document.exitPointerLock&&document.exitPointerLock();$('menu').style.display='none';$('dead').style.display='none';$('lobby').style.display='flex';try{setLobbyPanel('play');}catch(e){}syncMenuActions();};
 (function(){
  const btn=$('devBtn'),modal=$('devModal'),inp=$('devCode'),err=$('devErr');
  if(!btn||!modal)return;
