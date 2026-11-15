@@ -209,7 +209,7 @@ body.dev-on.touch #tc>#bDevFly,body.dev-on.touch #tc>#bDevDown,body.dev-on.touch
 #settingsPanel .setRow{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:8px 10px;border-radius:8px;background:#252e40;border:1px solid #3a4560}
 #settingsPanel .setRow button{background:var(--ac);color:#111;border:0;border-radius:8px;padding:8px 12px;font-weight:800;cursor:pointer;font-family:inherit;min-width:72px}
 #settingsPanel .setRow button.off{background:#3a4560;color:#fff}
-#fpsHud{position:fixed;left:10px;top:10px;z-index:80;padding:5px 8px;border-radius:6px;background:#000a;color:#7dff9b;font:700 13px monospace;pointer-events:none;display:none}
+#fpsHud{position:fixed;left:10px;top:10px;z-index:20;padding:5px 8px;border-radius:6px;background:#000a;color:#7dff9b;font:700 13px monospace;pointer-events:none!important;display:none}
 #hm{position:absolute;left:50%;top:50%;width:36px;height:36px;margin:-18px;opacity:0;pointer-events:none;--hc:#fff}
 #hm:before,#hm:after{content:"";position:absolute;left:17px;top:-6px;width:3px;height:48px;background:linear-gradient(var(--hc) 0 32%,transparent 32% 68%,var(--hc) 68% 100%);transform:rotate(45deg)}
 #hm:after{transform:rotate(-45deg)}
@@ -16032,7 +16032,7 @@ function updateDevHint(){let el=$('devHint');if(!el){el=document.createElement('
 }
 const keys={};let mouseDown=false,lastShot=0,paused=true;
 const bots=[];
-function spawnBot(b){if(NET.on&&BM.on){b.alive=false;b.g.visible=false;return;}let x,z;if(MAP.g){const L=(BM.on?b.team===BM.atk:b.team==='blue')?MAP.spB:MAP.spR;let k=0,q;do{q=L[Math.floor(Math.random()*L.length)];x=q[0]+(Math.random()-.5)*1.5;z=q[1]+(Math.random()-.5)*1.5;}while(blocked(x,z,.4,q[2])&&++k<40);if(k>=40){x=q[0];z=q[1];}b.gy=q[2];}
+function spawnBot(b){let x,z;if(MAP.g){const L=(BM.on?b.team===BM.atk:b.team==='blue')?MAP.spB:MAP.spR;let k=0,q;do{q=L[Math.floor(Math.random()*L.length)];x=q[0]+(Math.random()-.5)*1.5;z=q[1]+(Math.random()-.5)*1.5;}while(blocked(x,z,.4,q[2])&&++k<40);if(k>=40){x=q[0];z=q[1];}b.gy=q[2];}
  else do{x=(Math.random()*2-1)*(S-3);z=(b.team==='blue'?1:-1)*(Math.random()*(S-3))}while(blocked(x,z,.6));
  b.x=x;b.z=z;b.hp=100;b.mem=null;b.wp=null;b.hold=0;b.alive=true;b.cd=1+Math.random();b.g.position.set(x,MAP.g?b.gy:0,z);b.g.visible=true;b.g.rotation.x=0;b.fall=undefined;b.hf=0;}
 for(let i=0;i<9;i++){const blue=i>=5,g=new THREE.Group(),b={g,parts:[],team:blue?'blue':'red'};
@@ -16437,7 +16437,7 @@ try{setLobbyPanel('play');}catch(e){}
  let fpsFrames=0,fpsLast=performance.now();
  function syncFpsUI(){if(fpsBtn)fpsBtn.textContent=fpsEnabled?'Вкл':'Выкл';if(fpsHud)fpsHud.style.display=fpsEnabled?'block':'none';}
  if(fpsBtn)fpsBtn.onclick=e=>{e.stopPropagation();fpsEnabled=!fpsEnabled;try{localStorage.setItem('ms_show_fps',fpsEnabled?'1':'0');}catch(err){}syncFpsUI();};
- window.__msFpsTick=function(){if(!fpsEnabled)return;fpsFrames++;const now=performance.now();if(now-fpsLast>=500){fpsHud.textContent='FPS: '+Math.round(fpsFrames*1000/(now-fpsLast));fpsFrames=0;fpsLast=now;}};
+ window.__msFpsTick=function(){try{if(!fpsEnabled||!fpsHud)return;fpsFrames++;const now=performance.now();if(now-fpsLast>=500){fpsHud.textContent='FPS: '+Math.round(fpsFrames*1000/(now-fpsLast));fpsFrames=0;fpsLast=now;}}catch(err){/* FPS counter must never interrupt game controls */}};
  syncFpsUI();
  if(!btn||!panel)return;
  function close(){panel.classList.remove('open');panel.setAttribute('aria-hidden','true');}
@@ -17153,7 +17153,7 @@ if('ontouchstart' in window||navigator.maxTouchPoints>0){
  document.addEventListener('contextmenu',e=>e.preventDefault());
 }
 const clock=new THREE.Clock(),rcB=new THREE.Raycaster();
-function loop(){requestAnimationFrame(loop);if(window.__msFpsTick)window.__msFpsTick();const dt=Math.min(clock.getDelta(),.05);
+function loop(){requestAnimationFrame(loop);if(window.__msFpsTick){try{window.__msFpsTick();}catch(err){}}const dt=Math.min(clock.getDelta(),.05);
  if(!paused){
   if(P.inv>0)P.inv-=dt;if(P.dead){P.respawn-=dt;if(BM.on)$('dead').textContent='Ты погиб · ждём конец раунда';else if(P.respawn<=0)respawn();else $('dead').textContent='Ты погиб · Респавн через '+Math.ceil(P.respawn);}
   const dz0=(P.dead||P.grace>0||BM.act||(NET.on&&shopOpen))?0:1,f=((keys.KeyW?1:0)-(keys.KeyS?1:0)+joy.f)*dz0,r=((keys.KeyD?1:0)-(keys.KeyA?1:0)+joy.r)*dz0,sp=(keys.ShiftLeft&&!DEV.fly?3:6)*dt*(DEV.fly?1.6:1);
