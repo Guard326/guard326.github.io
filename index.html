@@ -95,6 +95,15 @@ html,body{touch-action:none;-webkit-user-select:none;user-select:none;-webkit-to
 .caseCard button.sec{background:#3a4560;color:#fff;margin-top:6px}
 #caseMsg{min-height:22px;font-size:13px;color:#ffd34d;margin:4px 0 8px}
 #shopSilver{opacity:.9;font-size:14px;margin:0 0 6px}
+#promoBtn{width:100%;margin:4px 0 12px;background:#3a4560;color:#fff;border:2px solid #556a88;border-radius:8px;padding:10px 12px;font-weight:800;font-size:14px;cursor:pointer;font-family:inherit}
+#promoBtn:hover{border-color:var(--ac)}
+#promoBox{display:none;margin:0 0 12px;padding:12px;background:#252e40;border:2px solid #3a4560;border-radius:10px;text-align:left}
+#promoBox.open{display:block}
+#promoBox label{display:block;font-size:13px;opacity:.8;margin-bottom:6px}
+#promoBox input{width:100%;box-sizing:border-box;background:#1b2230;border:2px solid #3a4560;border-radius:8px;color:#fff;padding:10px 12px;font-size:15px;font-weight:700;font-family:inherit;outline:none}
+#promoBox input:focus{border-color:var(--ac)}
+#promoApply{width:100%;margin-top:10px;background:var(--ac);color:#111;border:0;border-radius:8px;padding:10px;font-weight:800;font-size:14px;cursor:pointer;font-family:inherit}
+#promoHint{font-size:12px;opacity:.65;margin-top:8px;line-height:1.35}
 #match{position:absolute;left:50%;top:calc(10px + env(safe-area-inset-top,0px));transform:translateX(-50%);display:flex;align-items:center;gap:12px;background:rgba(0,0,0,.5);padding:4px 16px;border-radius:10px;font-size:24px}
 #match .b{color:#4da3ff}#match .r{color:#ff5a4a}#match b{font-size:20px;min-width:58px;text-align:center}
 #coinHud{position:fixed;top:12px;right:12px;z-index:26;display:flex;align-items:center;gap:8px;padding:7px 12px 7px 8px;border:1px solid rgba(230,238,248,.55);border-radius:22px;background:linear-gradient(145deg,rgba(34,43,56,.96),rgba(12,17,25,.96));box-shadow:0 3px 14px #0008;color:#f1f5fa;font:700 16px Arial,sans-serif;pointer-events:none;user-select:none}#coinHud .silverCoin{width:25px;height:25px;display:grid;place-items:center;border-radius:50%;border:2px solid #f3f6fa;background:radial-gradient(circle at 32% 25%,#fff 0%,#dce3eb 28%,#9ba8b8 62%,#647184 100%);box-shadow:inset 0 0 0 2px #8996a6,0 1px 4px #0009;color:#657184;font-size:15px;text-shadow:0 1px #fff}#coinHud.bump{animation:coinBump .35s ease}@keyframes coinBump{50%{transform:scale(1.14)}}
@@ -189,6 +198,13 @@ body.dev-on.touch #tc>#bDevFly,body.dev-on.touch #tc>#bDevDown,body.dev-on.touch
 </div>
 <div id="shopCases" style="display:none">
 <div id="shopSilver"></div>
+<button type="button" id="promoBtn">🎟 ПРОМОКОД</button>
+<div id="promoBox">
+<label for="promoInput">Введите промокод</label>
+<input id="promoInput" type="text" maxlength="24" autocomplete="off" placeholder="Код…">
+<button type="button" id="promoApply">Активировать</button>
+<div id="promoHint">До 5 раз на код · не чаще 1 раза в день</div>
+</div>
 <div id="caseMsg"></div>
 <div class="caseGrid">
 <div class="caseCard"><div class="caseName">Primary Case</div><div class="caseArt">🧰</div><div class="caseSub">Металлический кейс</div><div class="casePrice"><span class="c"></span> 500</div><button type="button" id="buyPrimaryCase">Купить</button><button type="button" class="sec" id="openPrimaryCase">Открыть (0)</button></div>
@@ -15935,7 +15951,7 @@ for(let i=0;i<9;i++){const blue=i>=5,g=new THREE.Group(),b={g,parts:[],team:blue
 
 function hud(){$('hp').textContent='❤ '+Math.max(0,P.hp);
  if(DEV.money)P.money=99999;
- $('ammo').textContent=cur==='knife'?'🔪 Нож':P.reloading>0?'Перезарядка…':(DEV.ok?'∞ / ∞':P.ammo+' / ∞');$('score').innerHTML='Убито: '+P.kills+'<br>💰 $'+(DEV.money?'∞':P.money);$('grn').innerHTML=['frag','flash','smoke'].map(k=>'<span'+(P.gsel===k?' class="gs"':'')+'>'+GREN[k].ic+'×'+(DEV.infGren[k]?'∞':P.gr[k])+'</span>').join(' ');}
+ $('ammo').textContent=cur==='knife'?'🔪 Нож':P.reloading>0?'Перезарядка…':((cur==='m4'?'M4A1 ':cur==='ak'?'AK-47 ':cur==='pistol'?'Deagle ':'')+(DEV.ok?'∞ / ∞':P.ammo+' / ∞'));$('score').innerHTML='Убито: '+P.kills+'<br>💰 $'+(DEV.money?'∞':P.money);$('grn').innerHTML=['frag','flash','smoke'].map(k=>'<span'+(P.gsel===k?' class="gs"':'')+'>'+GREN[k].ic+'×'+(DEV.infGren[k]?'∞':P.gr[k])+'</span>').join(' ');}
 function flash(el,cls,t){el.classList.add(cls);setTimeout(()=>el.classList.remove(cls),t)}
 function reload(){if(!P.dead&&(cur==='pistol'||isRifle(cur))&&P.reloading<=0&&P.ammo<30){P.reloading=isRifle(cur)?2:1.4;FEEL.rdur=P.reloading;FEEL.rs=0;snd('reloadOut',.55);}}
 const rc=new THREE.Raycaster();
@@ -15945,39 +15961,86 @@ const pistol=new THREE.Group();{const m=gunMesh(GD.dg,'dg');m.scale.setScalar(.4
 const flashM=part(pistol,.12,.12,.02,0,.12,-.32,0xffdd55);flashM.visible=false;
 const ak=new THREE.Group();{const m=gunMesh(GD.ak,'ak');m.scale.setScalar(.8);ak.add(m);}
 const flashAk=part(ak,.14,.14,.02,0,.12,-.58,0xffdd55);flashAk.visible=false;
-const m4=new THREE.Group();{const m=gunMesh(GD.ak,'m4fb');m.scale.setScalar(.78);m.traverse(o=>{if(o.isMesh&&o.material){o.material=o.material.clone();o.material.color=new THREE.Color(0x2a2e32);}});m4.add(m);}
-const flashM4=part(m4,.12,.12,.02,0,.1,-.55,0xaaccff);flashM4.visible=false;
+const m4=new THREE.Group();
+(function buildM4Fallback(){
+ const col=0x1c1f24,col2=0x2e333a,col3=0x4a5560,col4=0x111318;
+ part(m4,.055,.07,.55,0,.02,-.22,col);
+ part(m4,.05,.055,.22,0,.03,-.52,col2);
+ part(m4,.035,.035,.18,0,.015,-.72,col3);
+ part(m4,.02,.02,.12,0,.015,-.88,col4);
+ part(m4,.07,.045,.14,0,-.01,.08,col2);
+ part(m4,.04,.09,.04,0,.06,.02,col3);
+ part(m4,.03,.05,.03,0,.11,.02,col4);
+ part(m4,.025,.08,.05,0,-.06,-.05,col3);
+ part(m4,.04,.03,.1,0,-.035,-.28,col2);
+ part(m4,.03,.05,.08,0,.06,-.35,col3);
+ part(m4,.045,.02,.2,0,.055,-.45,col4);
+})();
+const flashM4=part(m4,.1,.1,.02,0,.02,-.95,0xaaccff);flashM4.visible=false;
 const knife=new THREE.Group();part(knife,.025,.07,.4,0,0,-.1,0xeeeeee,T.metal);part(knife,.05,.06,.16,0,-.01,.17,0xffffff,T.wood);part(knife,.07,.02,.03,0,0,.09,0x333333);
 [pistol,knife].forEach(g=>{g.position.set(.25,-.22,-.45);cam.add(g)});pistol.position.set(.24,-.28,-.40);ak.position.set(.27,-.34,-.43);m4.position.set(.27,-.34,-.43);cam.add(ak);cam.add(m4);ak.visible=false;m4.visible=false;knife.visible=false;
 (function tryLoadM4(){
  const urls=['M4A4_CS2.fbx','./M4A4_CS2.fbx'];
  function applyFbx(obj){
   while(m4.children.length)m4.remove(m4.children[0]);
-  obj.scale.setScalar(0.012);obj.rotation.set(0,Math.PI,0);obj.position.set(0,-0.02,-0.05);
-  obj.traverse(o=>{if(o.isMesh){o.castShadow=false;o.receiveShadow=false;}});
-  m4.add(obj);m4.add(flashM4);flashM4.position.set(0,.08,-.5);
+  const box=new THREE.Box3().setFromObject(obj),sz=box.getSize(new THREE.Vector3()),mx=Math.max(sz.x,sz.y,sz.z)||1;
+  const s=.55/mx;obj.scale.setScalar(s);
+  box.setFromObject(obj);const c=box.getCenter(new THREE.Vector3());
+  obj.position.sub(c);obj.position.z-=.15;obj.rotation.set(0,Math.PI,0);
+  obj.traverse(o=>{if(o.isMesh){o.castShadow=false;o.receiveShadow=false;if(o.material)o.material.side=THREE.DoubleSide;}});
+  m4.add(obj);m4.add(flashM4);flashM4.position.set(0,.02,-.55);
  }
- if(typeof THREE.FBXLoader==='function'){
-  const loader=new THREE.FBXLoader();
-  let i=0;function next(){if(i>=urls.length)return;loader.load(urls[i++],applyFbx,undefined,next);}
-  next();
- }else{
+ function loadScripts(cb){
+  if(typeof THREE.FBXLoader==='function')return cb();
   const s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/libs/fflate.min.js';
-  s.onload=function(){const s2=document.createElement('script');s2.src='https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/FBXLoader.js';s2.onload=tryLoadM4;document.head.appendChild(s2);};
+  s.onload=function(){const s2=document.createElement('script');s2.src='https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/FBXLoader.js';s2.onload=cb;s2.onerror=function(){};document.head.appendChild(s2);};
   s.onerror=function(){};document.head.appendChild(s);
  }
+ loadScripts(function(){
+  if(typeof THREE.FBXLoader!=='function')return;
+  const loader=new THREE.FBXLoader();let i=0;
+  function next(){if(i>=urls.length)return;loader.load(urls[i++],applyFbx,undefined,next);}
+  next();
+ });
 })();
 let cur='pistol',kick=0,stab=0;
 function sel(w){if(w==='pistol'&&!P.pistol)return;if(w==='ak'&&!P.ak)return;if(w==='m4'&&!P.m4)return;if(cur==='pistol'||isRifle(cur))P.am[cur]=P.ammo;if(cur!==w)snd('click',.4);cur=w;if(w==='pistol'||isRifle(w))P.ammo=P.am[w];pistol.visible=w==='pistol';ak.visible=w==='ak';m4.visible=w==='m4';knife.visible=w==='knife';}
 const GREN={frag:{p:300,n:'Осколочная',ic:'💣'},flash:{p:200,n:'Светошумовая',ic:'✨'},smoke:{p:300,n:'Дымовая',ic:'☁'}},GMAX=2,PRICE=300,PRICE_AK=1000,REWARD=200,SC={blue:0,red:0},MATCH={t:300,over:false};
-const COIN_KEY='ms_silver_coins',INV_KEY='ms_case_inv';let silverCoins=0,caseInv={primaryCase:0,primaryBox:0};
+const COIN_KEY='ms_silver_coins',INV_KEY='ms_case_inv',PROMO_KEY='ms_promo_uses';
+let silverCoins=0,caseInv={primaryCase:0,primaryBox:0},promoUses={};
+const PROMO_CODES={
+ STRIKE1000:{type:'fixed',amount:1000,maxUses:5},
+ LUCKYDAY:{type:'random',min:50,max:400,maxUses:5}
+};
 try{silverCoins=Math.max(0,parseInt(localStorage.getItem(COIN_KEY)||'0',10)||0);}catch(e){}
 try{const raw=JSON.parse(localStorage.getItem(INV_KEY)||'{}');caseInv.primaryCase=Math.max(0,raw.primaryCase|0);caseInv.primaryBox=Math.max(0,raw.primaryBox|0);}catch(e){}
+try{promoUses=JSON.parse(localStorage.getItem(PROMO_KEY)||'{}')||{};}catch(e){promoUses={};}
 function saveCoins(){try{localStorage.setItem(COIN_KEY,String(silverCoins));}catch(e){}}
 function saveInv(){try{localStorage.setItem(INV_KEY,JSON.stringify(caseInv));}catch(e){}}
+function savePromo(){try{localStorage.setItem(PROMO_KEY,JSON.stringify(promoUses));}catch(e){}}
 function renderCoins(){const el=$('coinBalance');if(el)el.textContent=silverCoins;}
 function awardMatchCoins(){silverCoins+=15;saveCoins();renderCoins();const hud=$('coinHud');if(hud){hud.classList.remove('bump');void hud.offsetWidth;hud.classList.add('bump');}}
 function spendCoins(n){if(silverCoins<n)return false;silverCoins-=n;saveCoins();renderCoins();return true;}
+function todayStr(){const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
+function applyPromo(codeRaw){
+ const code=(codeRaw||'').trim().toUpperCase().replace(/\s+/g,'');
+ const def=PROMO_CODES[code];
+ const msg=$('caseMsg');
+ if(!def){if(msg)msg.textContent='Неверный промокод';return false;}
+ const st=promoUses[code]||{uses:0,last:''};
+ if(st.uses>=def.maxUses){if(msg)msg.textContent='Лимит 5 применений исчерпан';return false;}
+ const day=todayStr();
+ if(st.last===day){if(msg)msg.textContent='Уже активировали сегодня. Завтра снова';return false;}
+ let add=0;
+ if(def.type==='fixed')add=def.amount;
+ else add=def.min+Math.floor(Math.random()*(def.max-def.min+1));
+ silverCoins+=add;saveCoins();renderCoins();
+ st.uses++;st.last=day;promoUses[code]=st;savePromo();
+ if(msg)msg.textContent='Промокод! +'+add+' ✦ серебра ('+st.uses+'/'+def.maxUses+')';
+ const hud=$('coinHud');if(hud){hud.classList.remove('bump');void hud.offsetWidth;hud.classList.add('bump');}
+ try{snd('buy',.7);}catch(e){}
+ renderCaseShop();return true;
+}
 function renderCaseShop(){
  const ss=$('shopSilver');if(ss)ss.textContent='Серебро: ✦ '+silverCoins;
  const bc=$('buyPrimaryCase'),bb=$('buyPrimaryBox'),oc=$('openPrimaryCase'),ob=$('openPrimaryBox');
@@ -16041,6 +16104,9 @@ if($('buyPrimaryCase'))$('buyPrimaryCase').onclick=()=>{if(!spendCoins(500))retu
 if($('buyPrimaryBox'))$('buyPrimaryBox').onclick=()=>{if(!spendCoins(100))return;caseInv.primaryBox++;saveInv();const m=$('caseMsg');if(m)m.textContent='Куплен Primary Box';renderCaseShop();try{snd('buy',.6);}catch(e){}};
 if($('openPrimaryCase'))$('openPrimaryCase').onclick=()=>openCase('case');
 if($('openPrimaryBox'))$('openPrimaryBox').onclick=()=>openCase('box');
+if($('promoBtn'))$('promoBtn').onclick=()=>{const box=$('promoBox');if(!box)return;box.classList.toggle('open');if(box.classList.contains('open')){const inp=$('promoInput');if(inp){inp.value='';setTimeout(()=>inp.focus(),30);}}};
+if($('promoApply'))$('promoApply').onclick=()=>{const inp=$('promoInput');applyPromo(inp?inp.value:'');};
+if($('promoInput'))$('promoInput').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();applyPromo(e.target.value);}});
 function syncMenuActions(){
  const lob=$('lobby'),ma=$('menuActions');
  if(!ma)return;
