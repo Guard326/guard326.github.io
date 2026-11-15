@@ -52,6 +52,26 @@ html,body{touch-action:none;-webkit-user-select:none;user-select:none;-webkit-to
 #bShop{right:calc(170px + env(safe-area-inset-right,0px));bottom:calc(150px + env(safe-area-inset-bottom,0px));width:60px;height:60px}
 #shop{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.7);z-index:40}
 #shop.open{display:flex}
+#caseSpin{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.88);z-index:45;flex-direction:column;gap:18px;padding:16px}
+#caseSpin.open{display:flex}
+#caseSpin h3{margin:0;color:var(--ac);font-size:22px;letter-spacing:1px}
+#spinViewport{position:relative;width:min(560px,94vw);height:140px;overflow:hidden;border-radius:12px;border:2px solid #3a4560;background:#121820;box-shadow:inset 0 0 40px #000a}
+#spinViewport:before,#spinViewport:after{content:"";position:absolute;top:0;bottom:0;width:48px;z-index:2;pointer-events:none}
+#spinViewport:before{left:0;background:linear-gradient(90deg,#121820,transparent)}
+#spinViewport:after{right:0;background:linear-gradient(270deg,#121820,transparent)}
+#spinMarker{position:absolute;left:50%;top:0;bottom:0;width:3px;margin-left:-1.5px;background:var(--ac);z-index:3;box-shadow:0 0 12px var(--ac);pointer-events:none}
+#spinMarker:before{content:"";position:absolute;left:50%;top:0;transform:translateX(-50%);border-left:8px solid transparent;border-right:8px solid transparent;border-top:12px solid var(--ac)}
+#spinTrack{display:flex;height:100%;will-change:transform;align-items:stretch}
+.spinItem{flex:0 0 120px;width:120px;height:100%;box-sizing:border-box;border-right:2px solid #1a2230;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;background:linear-gradient(180deg,#2a3348,#1a2230);padding:8px 4px}
+.spinItem .ic{font-size:42px;line-height:1;filter:drop-shadow(0 2px 4px #0008)}
+.spinItem .nm{font-size:11px;font-weight:700;text-align:center;line-height:1.2;max-width:110px;color:#e8eef6}
+.spinItem.r-coin{border-bottom:4px solid #c0c8d4}
+.spinItem.r-emote{border-bottom:4px solid #4da3ff}
+.spinItem.r-skin{border-bottom:4px solid #ffb020;background:linear-gradient(180deg,#3a3420,#2a2410)}
+.spinItem.r-junk{border-bottom:4px solid #666}
+#spinResult{min-height:28px;font-size:18px;font-weight:800;color:#ffd34d;text-align:center}
+#spinOk{display:none;background:var(--ac);color:#111;border:0;border-radius:10px;padding:12px 36px;font-weight:800;font-size:16px;cursor:pointer;font-family:inherit}
+#spinOk.show{display:inline-block}
 #lobby{position:fixed;inset:0;z-index:20;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;padding:20px;background:radial-gradient(circle at 30% 20%,#243049,#0d1119 70%);overflow:auto}
 #lobby h1{margin:0;font-size:clamp(32px,6vw,56px);color:var(--ac);letter-spacing:3px}
 .lb-sub{opacity:.7;margin:-8px 0 0}
@@ -256,6 +276,7 @@ body.dev-on.touch #tc>#bDevFly,body.dev-on.touch #tc>#bDevDown,body.dev-on.touch
 <div id="emoteHint" style="font-size:12px;opacity:.7;margin-bottom:8px">В матче: клавиша T или кнопка 😎</div>
 </div>
 <button id="shopClose">Закрыть (E)</button></div></div>
+<div id="caseSpin"><h3 id="spinTitle">Primary Case</h3><div id="spinViewport"><div id="spinMarker"></div><div id="spinTrack"></div></div><div id="spinResult"></div><button type="button" id="spinOk">Забрать</button></div>
 <div id="result"><div id="resBox"><h2 id="resTitle"></h2><div id="resScore"></div><button id="resAgain">Играть снова</button><button id="resLobby">В лобби</button></div></div>
 <div id="menu" style="display:none"><h1>ПАУЗА</h1><p id="msg">Кликни, чтобы начать</p>
 <p>WASD — движение · Мышь — прицел · ЛКМ — стрельба/удар · R — перезарядка · Пробел — прыжок · 1 — Desert Eagle · 2 — нож · 3 — АК-47 · B — закладка бомбы · G — граната (4/5/6 — тип) · E — магазин · P — пауза</p>
@@ -16206,31 +16227,78 @@ function playEmote(id){
  if(NET.on&&NET.state==='play')netSend({t:'em',id:NET.me,e:eid});
  try{snd('click',.35);}catch(e){}
 }
-function rollEmotePrize(){
- const locked=EMOTES_ORDER.filter(id=>!ownEmote(id));
- if(locked.length){const id=locked[Math.floor(Math.random()*locked.length)];grantEmote(id);renderEmoteGrid();return 'Эмоция: '+EMOTES[id].emoji+' '+EMOTES[id].name;}
- const add=10+Math.floor(Math.random()*20);silverCoins+=add;saveCoins();renderCoins();return 'Все эмоции есть · +'+add+' ✦';
+function rollCasePrize(kind){
+ const r=Math.random();
+ if(kind==='box'){
+  if(r<.30)return{type:'skin',id:'sand',icon:'🏜️',name:'M4A1 Песок',cls:'r-skin'};
+  if(r<.70){const add=2+Math.floor(Math.random()*9);return{type:'coin',amount:add,icon:'🪙',name:'+'+add+' серебра',cls:'r-coin'};}
+  if(r<.90){const id=EMOTES_ORDER[Math.floor(Math.random()*EMOTES_ORDER.length)];return{type:'emote',id,icon:EMOTES[id].emoji,name:EMOTES[id].name,cls:'r-emote'};}
+  return{type:'junk',icon:'🎫',name:'Стикер',cls:'r-junk'};
+ }
+ if(r<.50){const add=5+Math.floor(Math.random()*16);return{type:'coin',amount:add,icon:'🪙',name:'+'+add+' серебра',cls:'r-coin'};}
+ if(r<.85){const id=EMOTES_ORDER[Math.floor(Math.random()*EMOTES_ORDER.length)];return{type:'emote',id,icon:EMOTES[id].emoji,name:EMOTES[id].name,cls:'r-emote'};}
+ return{type:'junk',icon:'🏷️',name:'Значок',cls:'r-junk'};
 }
+function fillerItem(kind){
+ const pool=[{type:'coin',icon:'🪙',name:'Монеты',cls:'r-coin'}];
+ EMOTES_ORDER.forEach(id=>pool.push({type:'emote',id,icon:EMOTES[id].emoji,name:EMOTES[id].name,cls:'r-emote'}));
+ pool.push({type:'junk',icon:'🎫',name:'Стикер',cls:'r-junk'},{type:'junk',icon:'🏷️',name:'Значок',cls:'r-junk'});
+ if(kind==='box')pool.push({type:'skin',id:'sand',icon:'🏜️',name:'M4A1 Песок',cls:'r-skin'});
+ return pool[Math.floor(Math.random()*pool.length)];
+}
+function grantRolledPrize(p){
+ let text='';
+ if(p.type==='coin'){silverCoins+=p.amount;saveCoins();renderCoins();text='+'+p.amount+' ✦ серебра';}
+ else if(p.type==='emote'){
+  if(grantEmote(p.id)){text='Эмоция: '+p.icon+' '+p.name;renderEmoteGrid();}
+  else{const add=8+Math.floor(Math.random()*12);silverCoins+=add;saveCoins();renderCoins();text='Эмоция уже есть · +'+add+' ✦';}
+ }
+ else if(p.type==='skin'){
+  if(grantSkin('sand')){text='Скин M4A1: Песок 🏜️';setEqSkin('sand');}
+  else{const add=25+Math.floor(Math.random()*30);silverCoins+=add;saveCoins();renderCoins();text='Скин уже есть · +'+add+' ✦';}
+ }
+ else text=p.name+' · почти ничего';
+ return text;
+}
+let spinBusy=false;
 function openCase(kind){
+ if(spinBusy)return;
  const key=kind==='case'?'primaryCase':'primaryBox';
  if(caseInv[key]<=0)return;
- caseInv[key]--;saveInv();
- let prize;const r=Math.random();
- if(kind==='box'){
-  if(r<.30){
-   if(grantSkin('sand')){prize='Скин M4A1: Песок 🏜️';setEqSkin('sand');}
-   else{const add=25+Math.floor(Math.random()*30);silverCoins+=add;saveCoins();renderCoins();prize='Скин уже есть · +'+add+' ✦';}
-  }else if(r<.70){const add=2+Math.floor(Math.random()*9);silverCoins+=add;saveCoins();renderCoins();prize='+'+add+' ✦ серебра';}
-  else if(r<.90){prize=rollEmotePrize();}
-  else{prize=['Стикер Primary','Значок Mini Strike','Ничего… почти'][Math.floor(Math.random()*3)];}
- }else{
-  if(r<.50){const add=5+Math.floor(Math.random()*16);silverCoins+=add;saveCoins();renderCoins();prize='+'+add+' ✦ серебра';}
-  else if(r<.85){prize=rollEmotePrize();}
-  else{prize=['Стикер Primary','Значок Mini Strike','Ничего… почти'][Math.floor(Math.random()*3)];}
- }
- const msg=$('caseMsg');if(msg)msg.textContent='Выпало: '+prize;
- renderCaseShop();try{snd('buy',.5);}catch(e){}
+ caseInv[key]--;saveInv();renderCaseShop();
+ const win=rollCasePrize(kind);
+ const ITEM_W=120,COUNT=40,winIndex=32;
+ const items=[];
+ for(let i=0;i<COUNT;i++)items.push(i===winIndex?win:fillerItem(kind));
+ const track=$('spinTrack'),vp=$('spinViewport'),title=$('spinTitle'),res=$('spinResult'),ok=$('spinOk'),spin=$('caseSpin');
+ if(!track||!spin){const t=grantRolledPrize(win);const m=$('caseMsg');if(m)m.textContent='Выпало: '+t;return;}
+ title.textContent=kind==='box'?'Primary Box':'Primary Case';
+ res.textContent='';ok.classList.remove('show');
+ track.innerHTML='';track.style.transition='none';track.style.transform='translateX(0)';
+ items.forEach(it=>{
+  const d=document.createElement('div');d.className='spinItem '+(it.cls||'r-junk');
+  d.innerHTML='<div class="ic">'+it.icon+'</div><div class="nm">'+it.name+'</div>';
+  track.appendChild(d);
+ });
+ spin.classList.add('open');spinBusy=true;
+ try{snd('click',.4);}catch(e){}
+ requestAnimationFrame(()=>requestAnimationFrame(()=>{
+  const vpW=vp.clientWidth||560;
+  const target=winIndex*ITEM_W+(ITEM_W/2)-(vpW/2)+(Math.random()*24-12);
+  track.style.transition='transform 5s cubic-bezier(0.12, 0.7, 0.1, 1)';
+  track.style.transform='translateX('+(-target)+'px)';
+  setTimeout(()=>{
+   const text=grantRolledPrize(win);
+   res.textContent='Выпало: '+text;
+   const m=$('caseMsg');if(m)m.textContent='Выпало: '+text;
+   ok.classList.add('show');spinBusy=false;
+   renderCaseShop();
+   try{snd('buy',.7);}catch(e){}
+   const hud=$('coinHud');if(hud&&win.type==='coin'){hud.classList.remove('bump');void hud.offsetWidth;hud.classList.add('bump');}
+  },5100);
+ }));
 }
+if($('spinOk'))$('spinOk').onclick=()=>{const s=$('caseSpin');if(s)s.classList.remove('open');};
 renderCoins();
 function endMatch(){if(MATCH.over)return;MATCH.over=true;awardMatchCoins();MATCH.t=0;paused=true;mouseDown=false;keys.Space=false;joy.f=joy.r=0;$('dead').style.display='none';document.exitPointerLock&&document.exitPointerLock();
  const ma=BM.on?BM.w.a:SC.blue,mr=BM.on?BM.w.r:SC.red,rt=(BM.on&&NET.on&&NET.team==='red'),me=rt?mr:ma,op=rt?ma:mr,w=me>op?['ПОБЕДА','#5cd65c']:me<op?['ПОРАЖЕНИЕ','#ff5a4a']:['НИЧЬЯ','#ffb020'];
