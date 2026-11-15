@@ -200,7 +200,15 @@ html,body{touch-action:none;-webkit-user-select:none;user-select:none;-webkit-to
 body.dev-on.touch #tc>#bDevFly,body.dev-on.touch #tc>#bDevDown,body.dev-on.touch #tc>#bDevInvis,body.dev-on.touch #tc>#bDevOne{display:flex}
 #tc>#bDevFly.on,#tc>#bDevInvis.on,#tc>#bDevOne.on{background:rgba(255,176,32,.65);border-color:var(--ac)}
 #tc>#bDevDown.on{background:rgba(100,160,255,.55);border-color:#6af}
-#sndBtn{position:absolute;left:calc(50% + 32px);top:calc(52px + env(safe-area-inset-top,0px));pointer-events:auto;width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,.18);border:2px solid rgba(255,255,255,.4);color:#fff;font-size:18px;cursor:pointer;padding:0}
+#sndBtn{display:none!important}
+#settingsBtn{position:fixed;right:calc(14px + env(safe-area-inset-right,0px));bottom:calc(14px + env(safe-area-inset-bottom,0px));z-index:35;width:48px;height:48px;border-radius:50%;border:2px solid rgba(255,255,255,.4);background:rgba(20,28,40,.88);color:#fff;font-size:22px;cursor:pointer;pointer-events:auto;box-shadow:0 4px 14px #0007;padding:0;line-height:1}
+#settingsBtn:hover{border-color:var(--ac)}
+#settingsPanel{position:fixed;right:calc(14px + env(safe-area-inset-right,0px));bottom:calc(70px + env(safe-area-inset-bottom,0px));z-index:36;display:none;flex-direction:column;gap:8px;min-width:200px;padding:12px;border-radius:12px;border:2px solid #3a4560;background:rgba(18,24,34,.96);box-shadow:0 8px 28px #000a;color:#e8eef6;font:14px Arial,sans-serif}
+#settingsPanel.open{display:flex}
+#settingsPanel h4{margin:0 0 4px;font-size:13px;letter-spacing:1px;text-transform:uppercase;opacity:.7}
+#settingsPanel .setRow{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:8px 10px;border-radius:8px;background:#252e40;border:1px solid #3a4560}
+#settingsPanel .setRow button{background:var(--ac);color:#111;border:0;border-radius:8px;padding:8px 12px;font-weight:800;cursor:pointer;font-family:inherit;min-width:72px}
+#settingsPanel .setRow button.off{background:#3a4560;color:#fff}
 #hm{position:absolute;left:50%;top:50%;width:36px;height:36px;margin:-18px;opacity:0;pointer-events:none;--hc:#fff}
 #hm:before,#hm:after{content:"";position:absolute;left:17px;top:-6px;width:3px;height:48px;background:linear-gradient(var(--hc) 0 32%,transparent 32% 68%,var(--hc) 68% 100%);transform:rotate(45deg)}
 #hm:after{transform:rotate(-45deg)}
@@ -215,9 +223,14 @@ body.dev-on.touch #tc>#bDevFly,body.dev-on.touch #tc>#bDevDown,body.dev-on.touch
 #menuActions .menuAction.sel{border-color:var(--ac);box-shadow:0 0 0 2px var(--ac)}
 </style></head><body>
 <div id="menuActions"><button type="button" class="menuAction primary" id="menuPlay"><span class="menuIcon">▶</span><span>ИГРАТЬ</span></button><button type="button" class="menuAction" id="menuShop"><span class="menuIcon">🛒</span><span>МАГАЗИН</span></button><button type="button" class="menuAction" id="menuInv"><span class="menuIcon">🎒</span><span>ИНВЕНТАРЬ</span></button></div>
+<button type="button" id="settingsBtn" title="Настройки">⚙</button>
+<div id="settingsPanel" aria-hidden="true">
+<h4>Настройки</h4>
+<div class="setRow"><span>Звук</span><button type="button" id="setMuteBtn">Вкл</button></div>
+</div>
 <div id="coinHud"><span class="silverCoin">✦</span><span id="coinBalance">0</span></div>
 <div id="emoteFx" aria-hidden="true"></div>
-<div id="hud"><div id="dmg"></div><div id="flashov"></div><div id="grn"></div><div id="match"><span class="b">0</span><b>5:00</b><span class="r">0</span></div><div id="opp"></div><div id="bnr"></div><div id="actBox" style="display:none"><div id="actLbl"></div><div id="actBar"><i id="actFill"></i></div></div><div id="grace"></div><div id="dead"></div><button id="pauseBtn">⏸</button><button id="sndBtn">🔊</button><div id="cross"></div><div id="hm"></div><div id="dn"></div><div id="score"></div><canvas id="minimap" width="256" height="256"></canvas><div id="hp"></div><div id="ammo"></div></div>
+<div id="hud"><div id="dmg"></div><div id="flashov"></div><div id="grn"></div><div id="match"><span class="b">0</span><b>5:00</b><span class="r">0</span></div><div id="opp"></div><div id="bnr"></div><div id="actBox" style="display:none"><div id="actLbl"></div><div id="actBar"><i id="actFill"></i></div></div><div id="grace"></div><div id="dead"></div><button id="pauseBtn">⏸</button><div id="cross"></div><div id="hm"></div><div id="dn"></div><div id="score"></div><canvas id="minimap" width="256" height="256"></canvas><div id="hp"></div><div id="ammo"></div></div>
 <div id="lobby"><button type="button" id="devBtn">Я разработчик</button><h1>MINI STRIKE</h1><p class="lb-sub">Лобби</p>
 <div id="lobbyPlay">
 <div class="lb-cols">
@@ -16414,8 +16427,17 @@ $('menuPlay').onclick=()=>{
 $('menuShop').onclick=e=>{e.preventDefault();e.stopPropagation();if(!isLobbyVisible())return;setLobbyPanel('shop');};
 if($('menuInv'))$('menuInv').onclick=e=>{e.preventDefault();e.stopPropagation();if(!isLobbyVisible())return;setLobbyPanel('inv');};
 try{setLobbyPanel('play');}catch(e){}
+(function(){
+ const btn=$('settingsBtn'),panel=$('settingsPanel'),mute=$('setMuteBtn');
+ if(!btn||!panel)return;
+ function close(){panel.classList.remove('open');panel.setAttribute('aria-hidden','true');}
+ function open(){panel.classList.add('open');panel.setAttribute('aria-hidden','false');syncMuteUI();}
+ btn.onclick=e=>{e.stopPropagation();if(panel.classList.contains('open'))close();else open();};
+ if(mute)mute.onclick=e=>{e.stopPropagation();toggleMute();};
+ document.addEventListener('click',e=>{if(!panel.classList.contains('open'))return;if(e.target===btn||btn.contains(e.target)||panel.contains(e.target))return;close();});
+ addEventListener('keydown',e=>{if(e.code==='Escape'&&panel.classList.contains('open'))close();});
+})();
 
-$('sndBtn').onclick=()=>toggleMute();
 ['buyPistol','buyAk','buyM4','buyKit','buy_frag','buy_flash','buy_smoke'].forEach(id=>{const e=$(id);if(!e)return;const f=e.onclick;e.onclick=function(){const sn=()=>[P.pistol,P.ak,P.m4,BM.kit,P.gr.frag,P.gr.flash,P.gr.smoke].join(),b=sn();if(f)f.apply(this,arguments);if(sn()!==b)snd('buy',.6);};});
 function respawn(){P.dead=false;P.hp=100;P.ammo=30;P.reloading=0;P.vy=0;{const q=spawnPoint(true);P.x=q.x;P.z=q.z;P.gy=q.y;P.y=P.gy+1.7;P.pitch=0;P.yaw=q.yaw;}P.inv=2;$('dead').style.display='none';}
 function pauseGame(){if(!P.alive||paused||shopOpen||NET.on)return;paused=true;mouseDown=false;keys.Space=false;joy.f=joy.r=0;document.exitPointerLock&&document.exitPointerLock();$('msg').textContent='Пауза. Кликни, чтобы продолжить';$('menu').style.display='flex';}
@@ -16864,7 +16886,7 @@ const SFX={ac:null,mg:null,nb:null,muted:false,act:0,
   try{const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return;const a=this.ac=new AC();try{this.muted=localStorage.getItem('ms_mute')==='1';}catch(e){}
    const mg=this.mg=a.createGain();mg.gain.value=this.muted?0:.85;const cp=a.createDynamicsCompressor();mg.connect(cp);cp.connect(a.destination);
    const nb=this.nb=a.createBuffer(1,a.sampleRate*2,a.sampleRate),d=nb.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;
-   const b=$('sndBtn');if(b)b.textContent=this.muted?'🔇':'🔊';}catch(e){this.ac=null;}},
+   const b=$('setMuteBtn');if(b){b.textContent=this.muted?'Выкл':'Вкл';b.classList.toggle('off',this.muted);} }catch(e){this.ac=null;}},
  setMuted(m){this.muted=m;if(this.mg)this.mg.gain.value=m?0:.85;try{localStorage.setItem('ms_mute',m?'1':'0');}catch(e){}},
  out(vol,pan){const a=this.ac,g=a.createGain();g.gain.value=vol;let n=g;if(a.createStereoPanner&&pan){const pn=a.createStereoPanner();pn.pan.value=Math.max(-1,Math.min(1,pan));g.connect(pn);n=pn;}n.connect(this.mg);return g;},
  tone(f0,f1,dur,type,vol,d0,dest){const a=this.ac,t=a.currentTime+(d0||0),o=a.createOscillator(),g=a.createGain();o.type=type||'sine';o.frequency.setValueAtTime(f0,t);
@@ -16906,7 +16928,8 @@ function snd(name,vol,x,y,z,arg){if(!SFX.ac||SFX.muted||!SND[name])return;let v=
  if(x!==undefined){const dx=x-P.x,dz=z-P.z,dy=y===undefined?0:y-P.y,d=Math.hypot(dx,dy,dz),rg=name==='boom'?150:75;v*=Math.pow(Math.max(0,1-d/rg),2);pan=(dx*Math.cos(P.yaw)-dz*Math.sin(P.yaw))/(d+.3);}
  if(v<.012)return;if(SFX.act>26&&name!=='boom'&&name!=='hurt')return;if(SFX.ac.state==='suspended')SFX.ac.resume();
  SFX.act++;setTimeout(()=>{SFX.act--;},1400);SND[name](SFX.out(v,pan),arg);}
-function toggleMute(){SFX.init();SFX.setMuted(!SFX.muted);const b=$('sndBtn');if(b)b.textContent=SFX.muted?'🔇':'🔊';}
+function syncMuteUI(){const b=$('setMuteBtn');if(b){b.textContent=SFX.muted?'Выкл':'Вкл';b.classList.toggle('off',!!SFX.muted);}}
+function toggleMute(){SFX.init();SFX.setMuted(!SFX.muted);syncMuteUI();}
 ['pointerdown','keydown','touchstart'].forEach(ev=>addEventListener(ev,()=>SFX.init(),{passive:true}));
 // --- ощущение стрельбы
 const FEEL={px:0,pz:0,spd:0,air:false,bloom:0,recov:0,stepD:0,rs:0,wt:0,sx:0,sy:0,lyaw:0,lpitch:0,rdur:1.4},DN=[];
